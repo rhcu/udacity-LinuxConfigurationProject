@@ -18,8 +18,25 @@ DNS address - `http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com`
 
 * Wait some time for the instance to start. You can find your public and private IP in `Networking` section now
 
-### SSH into your server from your local machine (I have Linux Ubuntu)
 
+### SSH into your server from your local machine (I have Linux Ubuntu)
+* Download the private key in your account section. It will have `.pem` extension
+
+* On your local machine, move this key into newly created directory `~/.ssh` with `udacity_key.rsa` name. 
+
+* Change permission of the file with `chmod 600 ~/.ssh/udacity_key.rsa` to prevent other users to be able to edit of read it.
+
+* You are able to connect to your server with the following command now: `ssh -i ~/.ssh/udacity_key.rsa ubuntu@35.177.254.104`, where 35.177.254.104 is my Public IP.
+
+* You will see a prompt asking about reliability of this server, answer `yes`.
+
+### Security: update packages, change port, configure UFW, install Fail2Ban and automatic packages update
+* Run the following commands to update and upgrade packages
+⋅⋅⋅ `sudo apt-get update`
+⋅⋅⋅ `sudo apt-get upgrade`
+
+* Edit the following file: `sudo vi /etc/ssh/sshd_config` to change Port 22 to Port 2200
+* Restart
 
 iv. A list of any third-party resources you made use of to complete this project
 1 - Update the server packages: 

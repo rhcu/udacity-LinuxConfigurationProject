@@ -74,10 +74,6 @@ sudo apt-get install unattended-upgrades
 sudo vi /etc/apt/apt.conf.d/50unattended-upgrades # open this file and uncomment ${distro_id}:${distro_codename}-updates
 sudo vi /etc/apt/apt.conf.d/20auto-upgrades # change file to install updates after the needed time interval, e.g. daily.
 sudo dpkg-reconfigure --priority=low unattended-upgrades # enable it
-# some packages can be not updated asking to restart system, so use this:
-sudo apt-get update 
-sudo apt-get dist-upgrade
-sudo shutdown -r now
 ```
 ### Step 4: Add grader user
 * generate key `ssh_key` on local machine using `ssh-keygen` and save them in `~/.ssh`, where previously `udacity_key.rsa` was saved

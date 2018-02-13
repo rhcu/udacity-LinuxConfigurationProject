@@ -48,7 +48,6 @@ sudo ufw allow 2200/tcp
 sudo ufw allow 80/tcp 
 sudo ufw allow 123/udp
 sudo ufw enable
-
 ```
 iv. A list of any third-party resources you made use of to complete this project
 1 - Update the server packages: 

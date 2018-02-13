@@ -34,6 +34,7 @@ DNS address - `http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com`
 * Run the following commands to update and upgrade packages
 ⋅⋅⋅ `sudo apt-get update`
 ⋅⋅⋅ `sudo apt-get upgrade`
+⋅⋅⋅ `sudo apt autoremove`
 
 * Edit the `sshd_config` file: `sudo vi /etc/ssh/sshd_config` to change Port 22 to Port 2200. This is done to somehow prevent attacks on the default port.
 
@@ -51,54 +52,85 @@ sudo ufw enable
 ```
 You can check the status of your firewall with `sudo ufw enable`
 
-* Exit SSH connection with `exit` and configure ports in AWS Lightsail to add Custom TCP port 2200 and Custom UDP Port 123, and ⋅⋅⋅ to delete SSH 22 port. After that try to connect with the `ssh -i ~/.ssh/udacity_key.rsa ubuntu@35.177.254.104`, where 
-⋅⋅⋅ 35.177.254.104 is my Public IP, command from the previous step. If you are unable to do this, try to connect using another 
-⋅⋅⋅ Internet connection, or you have problems and locked off your server. :(
+* Exit SSH connection with `exit` and configure ports in AWS Lightsail to add Custom TCP port 2200 and Custom UDP Port 123, and to delete SSH 22 port. After that try to connect with the `ssh -i ~/.ssh/udacity_key.rsa ubuntu@35.177.254.104`, where 
+35.177.254.104 is my Public IP, command from the previous step. If you are unable to do this, try to connect using another 
+Internet connection, or you have problems and locked off your server. :(
 
 * SSH creates a secure server; however, it is exposed to attacks. Hence, we can use Fail2Ban, which automatically changes
-⋅⋅⋅ firewall settings to prevent attacks. It sends an email when someone is banned. Follow the commands below to install and 
-⋅⋅⋅ configure it.
+firewall settings to prevent attacks. It sends an email when someone is banned. Follow the commands below to install and 
+configure it.
 ```
 sudo apt-get install fail2ban
 sudo apt-get install sendmail iptables-persistent
 sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
 ```
-⋅⋅⋅ Configure settings in local file according to your needs. For example, if you want the email to include the relevant log 
-⋅⋅⋅ lines, you can change action item in the jail.local file to `action_mwl` and to add your destination email.
-⋅⋅⋅ Change under `[sshd]` `port = ssh` to `port = 2200`, as we have changed the default one.
+Configure settings in local file according to your needs. For example, if you want the email to include the relevant log 
+lines, you can change action item in the jail.local file to `action_mwl` and to add your destination email.
+Change under `[sshd]` `port = ssh` to `port = 2200`, as we have changed the default one.
 
+* One more way to increase security is to configure automatic updates 
+```
+sudo apt-get install unattended-upgrades 
+sudo vi /etc/apt/apt.conf.d/50unattended-upgrades # open this file and uncomment ${distro_id}:${distro_codename}-updates
+sudo vi /etc/apt/apt.conf.d/20auto-upgrades # change file to install updates after the needed time interval, e.g. daily.
+sudo dpkg-reconfigure --priority=low unattended-upgrades # enable it
+# some packages can be not updated asking to restart system, so use this:
+sudo apt-get update 
+sudo apt-get dist-upgrade
+sudo shutdown -r now
+```
+# Add grader user
+* generate key `ssh_key` on local machine using `ssh-keygen` and save them in `~/.ssh`, where previously `udacity_key.rsa` was saved
+* open this file and copy the content
+* create a file on your virtual machine and paste the content there 
+```
+su - grader
+mkdir .ssh
+vim .ssh/authorized_keys
+```
+* give grader `sudo` access using `sudo visudo` adding `grader  ALL=(ALL:ALL) ALL` line to the opened file.
+* log in as grader with `ssh -i ~/.ssh/ssh_key -p 2200 grader@35.177.254.104`
 
-iv. A list of any third-party resources you made use of to complete this project
-1 - Update the server packages: 
-sudo apt update
-sudo apt upgrade
-sudo apt autoremove
-2 - Change SSH port from 22 to 2200
-sudo nano /etc/ssh/sshd_config # change here and save file 
-sudo service ssh restart  # for changes to take power
-3 - Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123).
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow 2200/tcp
-sudo ufw allow 80/tcp 
-sudo ufw allow 123/udp
-sudo ufw enable
-4 - Create a new user, give permission to sudo and create key-pair
-sudo adduser grader # 'udacity' password; other values are default
-sudo usermod -aG sudo grader # gives grader permission to sudo
-ssh-keygen # public key saved with empty password in default folder /home/ubuntu/.ssh/id_rsa.pub
-5 - Configure the local timezone to UTC
-sudo dpkg-reconfigure tzdata
-6 - Install and configure Apache to serve a Python mod_wsgi application
-sudo apt-get install apache2
-sudo apt-get install libapache2-mod-wsgi-py3
-7 -  Install and configure PostgreSQL
-sudo apt install postgresql 
-check that there are no remote connections in this file
-sudo nano /etc/postgresql/9.5/main/pg_hba.conf
-8 - Install git and clone Item Catalog project
-sudo apt install git
+# Configure time
+* Use this command to set time: `sudo dpkg-reconfigure tzdata`
 
+# Install Apache
+Following commands are for Python 2.7
+* `sudo apt-get install apache2` # installs Apache
+* `sudo apt-get install python-setuptools libapache2-mod-wsgi`# installs mod_wsgi
+* `sudo service apache2 restart`
+
+# Install and configure PostgreSQL
+* Run the following commands 
+```
+sudo apt-get install postgresql
+sudo vim /etc/postgresql/9.5/main/pg_hba.conf # Check if no remote connections are allowed
+sudo su - postgres # Login as "postgres"
+psql 
+```
+* Create a new database named catalog and a new user catalog with catalog password in postgreSQL shell 
+```
+postgres=# CREATE ROLE catalog WITH LOGIN PASSWORD 'catalog';
+postgres=# ALTER ROLE catalog CREATEDB;
+\q
+exit
+``` 
+* Create a new Linux user catalog and give sudo permissions (same instructions as for grader user)
+* Log in as `catalog` and create `catalog` database `createdb catalog`; `exit` to return to `grader`
+# Install git 
+`sudo apt-get install git`
+# Clone project from GitHub
+* Create `/var/www/catalog/` directory
+* Change directory to the above
+* Clone the project `sudo git clone https://github.com/rhcu/Item-Catalog-Udacity-Project4.git catalog`
+* Change ownership to grader `sudo chown -R grader:grader catalog/`
+* Rename `application.py` to `__init__.py` 
+* Change in `__init__.py` the last line to `app.run()` 
+* Change in all `.py` files `create_engine()` to `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')`
+# Change Google Credentials for login
+* Create new Credentials with your IP and DNS as JavaScript origins and add `YOUR_DNS_HERE/oauth2callback` to redirect URI
+* Change `client_secrets.json` in your app directory to new one and `client_id` in `login.html`
+# Configure and Enable a New Virtual Host
 
 # Resources 
 * DigitalOcean Fail2Ban Configuration for Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04

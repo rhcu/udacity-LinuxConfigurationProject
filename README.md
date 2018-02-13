@@ -35,20 +35,39 @@ DNS address - `http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com`
 ⋅⋅⋅ `sudo apt-get update`
 ⋅⋅⋅ `sudo apt-get upgrade`
 
-* Edit the `sshd_config` file: `sudo vi /etc/ssh/sshd_config` to change Port 22 to Port 2200
+* Edit the `sshd_config` file: `sudo vi /etc/ssh/sshd_config` to change Port 22 to Port 2200. This is done to somehow prevent attacks on the default port.
 
 * Restart ssh with `sudo service ssh restart` command
 
-* Configure UFW with the following commands:
-⋅⋅⋅
+* Configure UFW with the following commands to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123).:
 ``` 
 sudo ufw default deny incoming
 sudo ufw default allow outgoing
+sudo ufw allow ssh
 sudo ufw allow 2200/tcp
 sudo ufw allow 80/tcp 
 sudo ufw allow 123/udp
 sudo ufw enable
 ```
+You can check the status of your firewall with `sudo ufw enable`
+
+* Exit SSH connection with `exit` and configure ports in AWS Lightsail to add Custom TCP port 2200 and Custom UDP Port 123, and ⋅⋅⋅ to delete SSH 22 port. After that try to connect with the `ssh -i ~/.ssh/udacity_key.rsa ubuntu@35.177.254.104`, where 
+⋅⋅⋅ 35.177.254.104 is my Public IP, command from the previous step. If you are unable to do this, try to connect using another 
+⋅⋅⋅ Internet connection, or you have problems and locked off your server. :(
+
+* SSH creates a secure server; however, it is exposed to attacks. Hence, we can use Fail2Ban, which automatically changes
+⋅⋅⋅ firewall settings to prevent attacks. It sends an email when someone is banned. Follow the commands below to install and 
+⋅⋅⋅ configure it.
+```
+sudo apt-get install fail2ban
+sudo apt-get install sendmail iptables-persistent
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+```
+⋅⋅⋅ Configure settings in local file according to your needs. For example, if you want the email to include the relevant log 
+⋅⋅⋅ lines, you can change action item in the jail.local file to `action_mwl` and to add your destination email.
+⋅⋅⋅ Change under `[sshd]` `port = ssh` to `port = 2200`, as we have changed the default one.
+
+
 iv. A list of any third-party resources you made use of to complete this project
 1 - Update the server packages: 
 sudo apt update
@@ -81,3 +100,6 @@ sudo nano /etc/postgresql/9.5/main/pg_hba.conf
 sudo apt install git
 
 
+# Resources 
+* DigitalOcean Fail2Ban Configuration for Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04
+* Very useful and well-formated README: https://github.com/boisalai/udacity-linux-server-configuration

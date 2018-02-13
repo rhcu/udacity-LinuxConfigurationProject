@@ -1,10 +1,24 @@
 # udacity-LinuxConfigurationProject
 Linux Server Configuration with Lightsail AWS 
-i. The IP address and SSH port so your server can be accessed by the reviewer.
-IP address - 18.217.108.149
 
-ii. The complete URL to your hosted web application.
-iii. A summary of software you installed and configuration changes made.
+## The IP address and SSH port so server can be accessed by the reviewer.
+IP address - `35.177.254.104`
+SSH port - 2200
+
+## The complete URL to the hosted web application.
+
+DNS address - `http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com`
+
+## A summary of software installed and configuration changes made.
+
+### Step 1: Start an Amazon Lightsail instance
+*Create an AWS account and Log in to Lightsail
+*Create an instance, specify that you need OS only Ubuntu image, give it the hostname (it won't be displayed anywhere), click `Create`
+*Wait some time for the instance to start. You can find your public and private IP in `Networking` section now
+
+### SSH into your server from your local machine (I have Linux Ubuntu)
+
+
 iv. A list of any third-party resources you made use of to complete this project
 1 - Update the server packages: 
 sudo apt update

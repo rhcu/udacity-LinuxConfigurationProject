@@ -12,9 +12,11 @@ DNS address - `http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com`
 ## A summary of software installed and configuration changes made.
 
 ### Step 1: Start an Amazon Lightsail instance
-*Create an AWS account and Log in to Lightsail
-*Create an instance, specify that you need OS only Ubuntu image, give it the hostname (it won't be displayed anywhere), click `Create`
-*Wait some time for the instance to start. You can find your public and private IP in `Networking` section now
+* Create an AWS account and Log in to Lightsail
+
+* Create an instance, specify that you need OS only Ubuntu image, give it the hostname (it won't be displayed anywhere), click `Create`
+
+* Wait some time for the instance to start. You can find your public and private IP in `Networking` section now
 
 ### SSH into your server from your local machine (I have Linux Ubuntu)
 

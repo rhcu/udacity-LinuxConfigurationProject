@@ -40,7 +40,8 @@ DNS address - `http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com`
 * Restart ssh with `sudo service ssh restart` command
 
 * Configure UFW with the following commands:
-⋅⋅⋅ ```
+⋅⋅⋅
+``` 
 sudo ufw default deny incoming
 
 sudo ufw default allow outgoing
@@ -52,6 +53,7 @@ sudo ufw allow 80/tcp
 sudo ufw allow 123/udp
 
 sudo ufw enable
+
 ```
 iv. A list of any third-party resources you made use of to complete this project
 1 - Update the server packages: 

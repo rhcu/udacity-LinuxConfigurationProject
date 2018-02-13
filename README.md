@@ -7,7 +7,7 @@ SSH port - 2200
 
 ## The complete URL to the hosted web application.
 
-DNS address - `http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com`
+DNS address - http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com
 
 ## A summary of software installed and configuration changes made.
 
@@ -79,7 +79,7 @@ sudo apt-get update
 sudo apt-get dist-upgrade
 sudo shutdown -r now
 ```
-# Add grader user
+## Add grader user
 * generate key `ssh_key` on local machine using `ssh-keygen` and save them in `~/.ssh`, where previously `udacity_key.rsa` was saved
 * open this file and copy the content
 * create a file on your virtual machine and paste the content there 
@@ -91,16 +91,16 @@ vim .ssh/authorized_keys
 * give grader `sudo` access using `sudo visudo` adding `grader  ALL=(ALL:ALL) ALL` line to the opened file.
 * log in as grader with `ssh -i ~/.ssh/ssh_key -p 2200 grader@35.177.254.104`
 
-# Configure time
+## Configure time
 * Use this command to set time: `sudo dpkg-reconfigure tzdata`
 
-# Install Apache
+## Install Apache
 Following commands are for Python 2.7
 * `sudo apt-get install apache2` # installs Apache
 * `sudo apt-get install python-setuptools libapache2-mod-wsgi`# installs mod_wsgi
 * `sudo service apache2 restart`
 
-# Install and configure PostgreSQL
+## Install and configure PostgreSQL
 * Run the following commands 
 ```
 sudo apt-get install postgresql
@@ -117,9 +117,9 @@ exit
 ``` 
 * Create a new Linux user catalog and give sudo permissions (same instructions as for grader user)
 * Log in as `catalog` and create `catalog` database `createdb catalog`; `exit` to return to `grader`
-# Install git 
+## Install git 
 `sudo apt-get install git`
-# Clone project from GitHub
+## Clone project from GitHub
 * Create `/var/www/catalog/` directory
 * Change directory to the above
 * Clone the project `sudo git clone https://github.com/rhcu/Item-Catalog-Udacity-Project4.git catalog`
@@ -127,11 +127,80 @@ exit
 * Rename `application.py` to `__init__.py` 
 * Change in `__init__.py` the last line to `app.run()` 
 * Change in all `.py` files `create_engine()` to `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')`
-# Change Google Credentials for login
+## Change Google Credentials for login
 * Create new Credentials with your IP and DNS as JavaScript origins and add `YOUR_DNS_HERE/oauth2callback` to redirect URI
 * Change `client_secrets.json` in your app directory to new one and `client_id` in `login.html`
-# Configure and Enable a New Virtual Host
+* In `__init__.py` there could be a problem while reading `.json` file, so change the line that loads info from it with the following `result = json.loads(h.request(url, "GET")[1].decode("utf-8"))`
 
-# Resources 
+## Configure and Enable a New Virtual Host
+* `sudo apt-get install python-virtualenv` # install virtual environment
+* In the directory of your app, create a new env `sudo virtualenv -p python venv3`
+* Change the ownership of this environment to `grader` 
+* Activate it `. venv3/bin/activate`
+* Install needed dependencies that you have used in your project
+```
+pip install httplib2
+pip install requests
+pip install --upgrade oauth2client
+pip install sqlalchemy
+pip install flask
+sudo apt-get install libpq-dev
+pip install psycopg2
+```
+There could be some slight changes in the syntaxis of these commands, especially in psycopg2 as it currently stopped maintenance for Python 2.7. Install it according to suggestion of Shell (e.g. binary file)
+* Run `__init__.py` to see if there are no mistakes at that point. 
+* `deactivate` environment
+
+### Install Flask app configurations
+* `sudo vi /etc/apache2/sites-available/FlaskApp.conf` # open this file to edit
+* Add the following lines of code
+```
+<VirtualHost *:80>
+		ServerName 35.177.254.104
+    ServerAlias http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com
+		WSGIScriptAlias / /var/www/catalog/catalog.wsgi
+		<Directory /var/www/catalog/catalog/>
+			Order allow,deny
+			Allow from all
+		</Directory>
+		ErrorLog ${APACHE_LOG_DIR}/error.log
+		LogLevel warn
+		CustomLog ${APACHE_LOG_DIR}/access.log combined
+	</VirtualHost>
+```
+* Enable the virtual host `sudo a2ensite catalog` and `sudo service apache2 reload` to reload Apache
+* Create `/var/www/catalog/catalog.wsgi` file and add the following text there
+```
+activate_this = '/var/www/catalog/catalog/venv3/bin/activate_this.py'
+with open(activate_this) as file_:
+    exec(file_.read(), dict(__file__=activate_this))
+
+#!/usr/bin/python
+import sys
+import logging
+logging.basicConfig(stream=sys.stderr)
+sys.path.insert(0, "/var/www/catalog/catalog/")
+sys.path.insert(1, "/var/www/catalog/")
+
+from catalog import app as application
+application.secret_key = "some_very_difficult_key_to_protect_data"
+```
+* `sudo service apache2 restart` 
+## Database setup
+* add following lines to the `.py` file that populates DB
+```
+import sys
+sys.path.insert(0, "/var/www/catalog/catalog/venv3/lib/python2.7/site-packages") 
+```
+* Activate `venv3` and run the code to populate db, deactivate the environment 
+
+## Displaying the app
+* Deactivate default Apache site `sudo a2dissite 000-default.conf`
+* Reload Apache
+* Change ownership to be able to display: `sudo chown -R www-data:www-data catalog/`
+* Restart Apache Server
+* Visit your DNS. Here http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com
+
+## Resources 
 * DigitalOcean Fail2Ban Configuration for Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04
 * Very useful and well-formated README: https://github.com/boisalai/udacity-linux-server-configuration

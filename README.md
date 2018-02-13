@@ -1,4 +1,4 @@
-# udacity-LinuxConfigurationProject
+# Linux Configuration Project
 Linux Server Configuration with Lightsail AWS 
 
 ## The IP address and SSH port so server can be accessed by the reviewer.
@@ -19,7 +19,7 @@ DNS address - http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com
 * Wait some time for the instance to start. You can find your public and private IP in `Networking` section now
 
 
-### SSH into your server from your local machine (I have Linux Ubuntu)
+### Step 2: SSH into your server from your local machine (I have Linux Ubuntu)
 * Download the private key in your account section. It will have `.pem` extension
 
 * On your local machine, move this key into newly created directory `~/.ssh` with `udacity_key.rsa` name. 
@@ -30,7 +30,7 @@ DNS address - http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com
 
 * You will see a prompt asking about reliability of this server, answer `yes`.
 
-### Security: update packages, change port, configure UFW, install Fail2Ban and automatic packages update
+### Step 3: Security: update packages, change port, configure UFW, install Fail2Ban and automatic packages update
 * Run the following commands to update and upgrade packages
 ⋅⋅⋅ `sudo apt-get update`
 ⋅⋅⋅ `sudo apt-get upgrade`
@@ -79,7 +79,7 @@ sudo apt-get update
 sudo apt-get dist-upgrade
 sudo shutdown -r now
 ```
-## Add grader user
+### Step 4: Add grader user
 * generate key `ssh_key` on local machine using `ssh-keygen` and save them in `~/.ssh`, where previously `udacity_key.rsa` was saved
 * open this file and copy the content
 * create a file on your virtual machine and paste the content there 
@@ -91,16 +91,16 @@ vim .ssh/authorized_keys
 * give grader `sudo` access using `sudo visudo` adding `grader  ALL=(ALL:ALL) ALL` line to the opened file.
 * log in as grader with `ssh -i ~/.ssh/ssh_key -p 2200 grader@35.177.254.104`
 
-## Configure time
+### Step 5: Configure time
 * Use this command to set time: `sudo dpkg-reconfigure tzdata`
 
-## Install Apache
+### Step 6: Install Apache
 Following commands are for Python 2.7
 * `sudo apt-get install apache2` # installs Apache
 * `sudo apt-get install python-setuptools libapache2-mod-wsgi`# installs mod_wsgi
 * `sudo service apache2 restart`
 
-## Install and configure PostgreSQL
+### Step 7: Install and configure PostgreSQL
 * Run the following commands 
 ```
 sudo apt-get install postgresql
@@ -117,9 +117,9 @@ exit
 ``` 
 * Create a new Linux user catalog and give sudo permissions (same instructions as for grader user)
 * Log in as `catalog` and create `catalog` database `createdb catalog`; `exit` to return to `grader`
-## Install git 
+### Step 8: Install git 
 `sudo apt-get install git`
-## Clone project from GitHub
+### Step 9: Clone project from GitHub
 * Create `/var/www/catalog/` directory
 * Change directory to the above
 * Clone the project `sudo git clone https://github.com/rhcu/Item-Catalog-Udacity-Project4.git catalog`
@@ -127,12 +127,12 @@ exit
 * Rename `application.py` to `__init__.py` 
 * Change in `__init__.py` the last line to `app.run()` 
 * Change in all `.py` files `create_engine()` to `engine = create_engine('postgresql://catalog:catalog@localhost/catalog')`
-## Change Google Credentials for login
+### Step 10: Change Google Credentials for login
 * Create new Credentials with your IP and DNS as JavaScript origins and add `YOUR_DNS_HERE/oauth2callback` to redirect URI
 * Change `client_secrets.json` in your app directory to new one and `client_id` in `login.html`
 * In `__init__.py` there could be a problem while reading `.json` file, so change the line that loads info from it with the following `result = json.loads(h.request(url, "GET")[1].decode("utf-8"))`
 
-## Configure and Enable a New Virtual Host
+### Step 11: Configure and Enable a New Virtual Host
 * `sudo apt-get install python-virtualenv` # install virtual environment
 * In the directory of your app, create a new env `sudo virtualenv -p python venv3`
 * Change the ownership of this environment to `grader` 
@@ -151,7 +151,7 @@ There could be some slight changes in the syntaxis of these commands, especially
 * Run `__init__.py` to see if there are no mistakes at that point. 
 * `deactivate` environment
 
-### Install Flask app configurations
+### Step 12: Install Flask app configurations
 * `sudo vi /etc/apache2/sites-available/FlaskApp.conf` # open this file to edit
 * Add the following lines of code
 ```
@@ -186,7 +186,7 @@ from catalog import app as application
 application.secret_key = "some_very_difficult_key_to_protect_data"
 ```
 * `sudo service apache2 restart` 
-## Database setup
+### Step 14: Database setup
 * add following lines to the `.py` file that populates DB
 ```
 import sys
@@ -194,13 +194,18 @@ sys.path.insert(0, "/var/www/catalog/catalog/venv3/lib/python2.7/site-packages")
 ```
 * Activate `venv3` and run the code to populate db, deactivate the environment 
 
-## Displaying the app
+### Step 15: Displaying the app
 * Deactivate default Apache site `sudo a2dissite 000-default.conf`
 * Reload Apache
 * Change ownership to be able to display: `sudo chown -R www-data:www-data catalog/`
 * Restart Apache Server
 * Visit your DNS. Here http://ec2-35-177-254-104.eu-west-2.compute.amazonaws.com
 
-## Resources 
+### Resources 
 * DigitalOcean Fail2Ban Configuration for Ubuntu: https://www.digitalocean.com/community/tutorials/how-to-protect-ssh-with-fail2ban-on-ubuntu-14-04
 * Very useful and well-formated README: https://github.com/boisalai/udacity-linux-server-configuration
+* One more useful GitHub: https://github.com/kongling893/Linux-Server-Configuration-UDACITY/blob/master/README.md
+* PostgreSQL Documentation: https://www.postgresql.org/docs/9.0/static/sql-createdatabase.html
+* Student Book relevant to this project (already deprecated but has links still): https://udacity.atlassian.net/wiki/spaces/BENDH/pages/7930043/Project+7+Linux+Server+Configuration
+* Information about SSH to get an understanding: https://www.ssh.com/ssh/protocol/
+* Udacity SSH Webcast: https://www.youtube.com/watch?v=HcwK8IWc-a8
